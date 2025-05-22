@@ -1,95 +1,297 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>수능완성 2000 – 단어 클릭 및 뜻 보기 예제</title>
+  <meta charset="UTF-8">
+  <title>교과서식 문장 배열영작 연습</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 10px; }
-    #showWords {
-      padding: 10px 20px; font-size: 16px;
-      background-color: #4CAF50; color: white;
-      border: 2px solid #4CAF50; border-radius: 8px;
-      cursor: pointer; outline: none; margin-bottom: 10px;
+    body { font-family: 'Arial Rounded MT Bold', Arial, sans-serif; padding: 24px; background: #f6f8fa; }
+    .header {
+      background: #3b82f6; color: #fff; padding: 32px 0 24px 0; text-align: center;
+      font-size: 2.3rem; letter-spacing: 1px; font-weight: bold; box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+      margin-bottom: 18px; border-radius: 0 0 28px 28px;
+      position: relative; display: flex; justify-content: center; align-items: center;
     }
-    #showWords:hover { background-color: white; color: #4CAF50; }
-    #meaningBox {
-      position: sticky; top: 0; background: #fff;
-      padding: 10px; font-size: 18px; color: #333;
-      border-bottom: 1px solid #ccc; z-index: 10;
-      margin-bottom: 10px;
+    .lesson-select-bar { display:flex; justify-content: center; align-items:center; gap:16px; margin-bottom: 18px; flex-wrap:wrap;}
+    .lesson-select-bar select { font-size:1.1em; padding: 5px 15px; border-radius: 8px; border:1.5px solid #2563eb;}
+    .lesson-select-bar .jumpbtn { background:#2563eb; color:#fff; border:none; border-radius:7px; padding:7px 16px; font-weight:bold; cursor:pointer; margin-right:6px;}
+    .lesson-select-bar .jumpbtn.active { background: #dbeafe; color:#1e293b; border:1px solid #2563eb;}
+    .lesson-select-bar .jumpbtn:hover { background:#1d4ed8;}
+    .lesson-title { font-size:1.5em; margin-bottom: 32px; color: #1e293b; font-weight: bold; text-align: center;}
+    .problem-block { background: #fff; margin-bottom: 38px; padding: 24px 16px 24px 16px; border-radius: 20px; box-shadow: 0 4px 18px #0001; border-left: 8px solid #3b82f6;}
+    .kor { font-size:1.22em; font-weight: bold; color: #2563eb; margin-bottom:16px;}
+    .sortable { display: flex; flex-wrap: wrap; min-height: 54px; gap: 14px; margin-bottom: 13px; }
+    .word { border: none; border-radius: 10px; padding: 13px 22px; font-size: 1.2em; cursor: pointer; transition: background 0.15s, transform 0.1s; box-shadow: 0 1px 6px #2563eb18; }
+    .answer .word { background: #e0e7ef; color: #1e293b; font-weight: bold;}
+    .pool .word { background: #2563eb; color: #fff; font-weight: bold;}
+    .pool .word:hover { background: #1d4ed8; transform: scale(1.08);}
+    .ctrl { margin-bottom: 8px;}
+    .ctrl button { padding: 8px 22px; font-size: 1.1em; border-radius: 9px; border: none; background: #3b82f6; color: #fff; cursor: pointer; margin-right: 8px; margin-bottom: 5px; font-weight: bold;}
+    .ctrl button:active { background: #2563eb; }
+    .result { font-size: 1.14em; font-weight: bold; color: #d97706; margin-top: 10px; min-height: 28px;}
+    #lesson-nav { margin: 46px 0 15px 0; text-align: center;}
+    #lesson-nav button { margin: 0 18px; padding: 11px 34px; font-size: 1.12em; border-radius: 12px; background: #2563eb; color: #fff; border:none; font-weight:bold;}
+    #lesson-nav button:active { background:#194ca0;}
+    @media (max-width:600px) {
+      .problem-block { padding:12px 6px 18px 6px;}
+      .word { padding: 9px 11px; font-size:1em;}
+      .ctrl button { padding: 7px 13px; font-size: 1em;}
+      #lesson-nav button { padding: 8px 15px; font-size:1em;}
     }
-    #wordList { padding-bottom: 20px; }
-    .lessonHeading { margin-top: 20px; font-size: 20px; font-weight: bold; }
-    .wordItem { display: inline-block; font-size: 20px;
-      cursor: pointer; margin: 5px; padding: 5px 10px;
-      background: #f0f0f0; border-radius: 4px;
+    .home-btn-ko {
+      position: absolute; left: 26px; top: 22px; background: #fff; color: #2563eb;
+      border: none; border-radius: 15px; padding: 12px 22px; font-size: 1.16rem; font-weight: bold;
+      box-shadow: 0 2px 8px #0001; cursor: pointer; text-decoration: none; z-index: 2;
+      transition: background 0.15s, color 0.15s;
+    }
+    .home-btn-ko:hover { background: #dbeafe; color: #1e293b; }
+    @media (max-width:600px) {
+      .home-btn-ko { left: 9px; top: 8px; padding: 7px 13px; font-size: .97em;}
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 </head>
 <body>
-  <button id="showWords">단어 목록 전체 보기</button>
-  <div id="meaningBox">단어를 클릭하면 뜻이 이곳에 표시됩니다.</div>
-  <div id="wordList"></div>
-
+  <div class="header">
+    <a href="https://nmyway77.github.io/home2/" class="home-btn-ko" title="홈으로 이동">홈으로</a>
+    교과서식 영어 문장 배열 연습
+  </div>
+  <div class="lesson-select-bar">
+    <select id="lessonSelect" onchange="goToLesson(this.value)"></select>
+    <div id="lessonJumpBtns"></div>
+  </div>
+  <div class="lesson-title" id="lesson-title"></div>
+  <div id="lesson-container"></div>
+  <div id="lesson-nav">
+    <button onclick="prevLesson()">이전 과</button>
+    <span id="lesson-progress"></span>
+    <button onclick="nextLesson()">다음 과</button>
+  </div>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const dictionary = [
-        { heading: '1과 단어' },
-        { word: 'apple',     meaning: '사과' },
-        { word: 'banana',    meaning: '바나나' },
-        { word: 'grape',     meaning: '포도' },
-        { heading: '2과 단어' },
-        { word: 'delicious', meaning: '맛있는' },
-        { word: 'fruit',     meaning: '과일' }
-      ];
-
-      const showBtn = document.getElementById('showWords');
-      const wordListDiv = document.getElementById('wordList');
-      const meaningBox = document.getElementById('meaningBox');
-
-      // TTS 발음 재생 (Web Speech API 우선, 실패 시 Google TTS)
-      function speak(word) {
-        if (window.speechSynthesis && 'SpeechSynthesisUtterance' in window) {
-          try {
-            const utter = new SpeechSynthesisUtterance(word);
-            utter.lang = 'en-US';
-            speechSynthesis.speak(utter);
-            return;
-          } catch (e) {
-            console.warn('Web Speech API 실패, Google TTS로 대체:', e);
+    // 1~10과 샘플 데이터 (1과만 예시, 2~10은 샘플 문제)
+    const lessons = [
+      {
+        title: "Lesson 1 - Go-Kart Race",
+        problems: [
+          {
+            kor: "고카트 경기 트랙에 신이 나서 응원하는 많은 사람들이 있다.",
+            eng: ["At", "the", "go-kart", "race", "track,", "there", "are", "many", "people", "who", "are", "cheering", "excitedly."],
+          },
+          {
+            kor: "시끄러운 엔진 소음을 내고 있는 카트들이 대기하고 있다.",
+            eng: ["The", "karts", "that", "are", "making", "loud", "engine", "noises", "are", "waiting."],
+          },
+          {
+            kor: "심판이 녹색 깃발을 흔들고, 경기가 시작된다!",
+            eng: ["An", "official", "waves", "a", "green", "flag", "and", "the", "race", "starts!"],
+          },
+          {
+            kor: "Max는 트랙에서 여섯 바퀴를 마치면서 가속 페달을 힘껏 발로 누른다.",
+            eng: ["Max", "pushes", "his", "foot", "down", "hard", "on", "the", "gas", "pedal", "as", "he", "completes", "his", "sixth", "lap", "on", "the", "track."],
+          },
+          {
+            kor: "직선 구간에서 Max는 경기의 선두인 Simon의 바로 옆까지 다가간다.",
+            eng: ["On", "the", "straightaway,", "Max", "pulls", "right", "beside", "the", "race's", "leader,", "Simon."],
+          },
+          {
+            kor: "작년에 Simon은 많은 경기에서 우승했지만, 경기에서 Max의 최고 성적은 5등으로 들어온 것이었다.",
+            eng: ["Last", "year,", "Simon", "won", "many", "races,", "but", "Max's", "best", "result", "in", "a", "race", "was", "coming", "in", "fifth", "place."],
+          },
+          {
+            kor: "이번에 그는 2등으로 경기를 마칠 기회가 있다.",
+            eng: ["This", "time,", "he", "has", "a", "chance", "to", "finish", "second."],
+          },
+          {
+            kor: "그러나 그는 오늘 2등으로 만족하지 않을 것이다.",
+            eng: ["But", "he", "isn't", "going", "to", "be", "satisfied", "with", "second", "place", "today."],
+          },
+          {
+            kor: "우승자는 세계적으로 유명한 경주 선수인 L. J. Richards를 만나게 된다!",
+            eng: ["The", "winner", "gets", "to", "meet", "the", "world", "famous", "racer", "L.", "J.", "Richards!"],
+          },
+          {
+            kor: "그는 그의 롤 모델을 만날 수 있는 기회를 놓치고 싶지 않다.",
+            eng: ["He", "doesn't", "want", "to", "miss", "the", "chance", "to", "meet", "his", "role", "model."],
           }
-        }
-        // Google Translate TTS fallback
-        const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=en&q=${encodeURIComponent(word)}`;
-        const audio = new Audio(url);
-        audio.play().catch(err => console.error('Audio 재생 실패:', err));
-      }
+        ]
+      },
+      { title: "Lesson 2", problems: [{ kor: "예시 문제입니다.", eng: ["Sample", "problem"] }] },
+      { title: "Lesson 3", problems: [{ kor: "예시 문제입니다.", eng: ["Sample", "problem"] }] },
+      { title: "Lesson 4", problems: [{ kor: "예시 문제입니다.", eng: ["Sample", "problem"] }] },
+      { title: "Lesson 5", problems: [{ kor: "예시 문제입니다.", eng: ["Sample", "problem"] }] },
+      { title: "Lesson 6", problems: [{ kor: "예시 문제입니다.", eng: ["Sample", "problem"] }] },
+      { title: "Lesson 7", problems: [{ kor: "예시 문제입니다.", eng: ["Sample", "problem"] }] },
+      { title: "Lesson 8", problems: [{ kor: "예시 문제입니다.", eng: ["Sample", "problem"] }] },
+      { title: "Lesson 9", problems: [{ kor: "예시 문제입니다.", eng: ["Sample", "problem"] }] },
+      { title: "Lesson 10", problems: [{ kor: "예시 문제입니다.", eng: ["Sample", "problem"] }] },
+    ];
 
-      function renderWords() {
-        wordListDiv.innerHTML = '';
-        dictionary.forEach(entry => {
-          if (entry.heading) {
-            const h = document.createElement('div');
-            h.textContent = entry.heading;
-            h.className = 'lessonHeading';
-            wordListDiv.appendChild(h);
-          } else {
-            const span = document.createElement('span');
-            span.textContent = entry.word;
-            span.className = 'wordItem';
-            span.addEventListener('click', () => {
-              meaningBox.textContent = `${entry.word} → ${entry.meaning}`;
-              speak(entry.word);
-            });
-            wordListDiv.appendChild(span);
+    let lessonIdx = 0;
+    let problemStates = [];
+    function shuffle(arr) { return arr.slice().sort(() => Math.random() - 0.5); }
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utter = new window.SpeechSynthesisUtterance(text);
+        utter.lang = 'en-US';
+        utter.rate = 1;
+        window.speechSynthesis.speak(utter);
+      }
+    }
+    function renderLessonSelectBar() {
+      // 드롭다운
+      const sel = document.getElementById('lessonSelect');
+      sel.innerHTML = lessons.map((l, i) =>
+        `<option value="${i}" ${i===lessonIdx?'selected':''}>${l.title}</option>`).join('');
+      // 버튼 목차
+      const jumpDiv = document.getElementById('lessonJumpBtns');
+      jumpDiv.innerHTML = lessons.map((l,i)=>
+        `<button class="jumpbtn${i===lessonIdx?' active':''}" onclick="goToLesson(${i})">${i+1}과</button>`
+      ).join('');
+    }
+    function renderLesson() {
+      renderLessonSelectBar();
+      const lesson = lessons[lessonIdx];
+      document.getElementById("lesson-title").textContent = lesson.title;
+      document.getElementById("lesson-progress").textContent = (lessonIdx+1) + " / " + lessons.length;
+      const container = document.getElementById("lesson-container");
+      container.innerHTML = "";
+      lesson.problems.forEach((prob, i) => {
+        let state = problemStates[i];
+        if (!state) {
+          state = { chosen: [], pool: shuffle(prob.eng), result: "" };
+          problemStates[i] = state;
+        }
+        const pb = document.createElement("div");
+        pb.className = "problem-block";
+        pb.innerHTML = `
+          <div class="kor">${i+1}. ${prob.kor}</div>
+          <div class="sortable answer" id="ans-${i}">
+            ${state.chosen.map((w, idx) => `<button class="word" onclick="removeWord(${i},${idx})">${w}</button>`).join('')}
+          </div>
+          <div class="sortable pool" id="pool-${i}">
+            ${state.pool.map((w, idx) => `<button class="word" onclick="chooseWord(${i},${idx})">${w}</button>`).join('')}
+          </div>
+          <div class="ctrl">
+            <button onclick="undoLastWord(${i})">되돌리기</button>
+            <button onclick="resetSentence(${i})">초기화</button>
+            <button onclick="checkAnswer(${i})">정답 확인</button>
+          </div>
+          <div class="result" id="result-${i}">${state.result||""}</div>
+        `;
+        container.appendChild(pb);
+      });
+
+      // 드래그 앤 드롭 최적화: onSort에서 renderLesson() 호출 X
+      lesson.problems.forEach((prob, i) => {
+        Sortable.create(document.getElementById(`ans-${i}`), {
+          group: `words${i}`,
+          animation: 120,
+          swapThreshold: 0.4,
+          onSort: function(evt) {
+            const state = problemStates[i];
+            const ansElem = document.getElementById(`ans-${i}`);
+            state.chosen = Array.from(ansElem.children).map(btn => btn.textContent);
+            state.result = "";
+            // renderLesson(); // (최적화) 순서만 바꿀 때는 전체 다시 그리지 않음!
+          },
+          onAdd: function(evt) {
+            // pool → answer로 올 때 원하는 위치에 삽입!
+            const state = problemStates[i];
+            const ansElem = document.getElementById(`ans-${i}`);
+            const poolElem = document.getElementById(`pool-${i}`);
+            const newIdx = evt.newIndex;
+            const movedWord = evt.item.textContent;
+            // pool에서 해당 단어 제거
+            const poolIdx = state.pool.indexOf(movedWord);
+            if(poolIdx > -1) state.pool.splice(poolIdx,1);
+            // answer에서 기존 추가를 방지
+            state.chosen = Array.from(ansElem.children).map(btn => btn.textContent);
+            const existIdx = state.chosen.lastIndexOf(movedWord);
+            if(existIdx > -1) state.chosen.splice(existIdx,1);
+            // 원하는 위치에 삽입
+            state.chosen.splice(newIdx, 0, movedWord);
+            state.result = "";
+            renderLesson(); // 실제로 풀에서 단어를 옮긴 경우에만 renderLesson 호출!
           }
         });
+        Sortable.create(document.getElementById(`pool-${i}`), {
+          group: `words${i}`,
+          animation: 120,
+          sort: false,
+          onAdd: function(evt) {
+            const state = problemStates[i];
+            const ansElem = document.getElementById(`ans-${i}`);
+            const poolElem = document.getElementById(`pool-${i}`);
+            state.chosen = Array.from(ansElem.children).map(btn => btn.textContent);
+            state.pool = Array.from(poolElem.children).map(btn => btn.textContent);
+            state.result = "";
+          }
+        });
+      });
+    }
+    function chooseWord(pIdx, wIdx) {
+      let state = problemStates[pIdx];
+      state.chosen.push(state.pool[wIdx]);
+      state.pool.splice(wIdx, 1);
+      state.result = "";
+      renderLesson();
+    }
+    function removeWord(pIdx, wIdx) {
+      let state = problemStates[pIdx];
+      state.pool.push(state.chosen[wIdx]);
+      state.chosen.splice(wIdx, 1);
+      state.result = "";
+      renderLesson();
+    }
+    function undoLastWord(pIdx) {
+      let state = problemStates[pIdx];
+      if (state.chosen.length > 0) {
+        state.pool.push(state.chosen.pop());
+        state.result = "";
+        renderLesson();
       }
-
-      showBtn.addEventListener('click', renderWords);
-      renderWords();
-    });
+    }
+    function resetSentence(pIdx) {
+      let prob = lessons[lessonIdx].problems[pIdx];
+      problemStates[pIdx] = { chosen: [], pool: shuffle(prob.eng), result: "" };
+      renderLesson();
+    }
+    function checkAnswer(pIdx) {
+      let prob = lessons[lessonIdx].problems[pIdx];
+      let state = problemStates[pIdx];
+      if (state.chosen.join(' ') === prob.eng.join(' ')) {
+        state.result = "정답입니다! 🎉";
+        speak(prob.eng.join(' '));
+      } else {
+        state.result = "아쉽지만 정답이 아닙니다. 다시 시도해보세요.";
+      }
+      renderLesson();
+    }
+    function nextLesson() {
+      if (lessonIdx < lessons.length-1) {
+        goToLesson(lessonIdx+1);
+      }
+    }
+    function prevLesson() {
+      if (lessonIdx > 0) {
+        goToLesson(lessonIdx-1);
+      }
+    }
+    function goToLesson(idx) {
+      lessonIdx = Number(idx);
+      problemStates = [];
+      renderLesson();
+    }
+    renderLesson();
+    window.chooseWord = chooseWord;
+    window.removeWord = removeWord;
+    window.undoLastWord = undoLastWord;
+    window.resetSentence = resetSentence;
+    window.checkAnswer = checkAnswer;
+    window.nextLesson = nextLesson;
+    window.prevLesson = prevLesson;
+    window.goToLesson = goToLesson;
   </script>
 </body>
 </html>
+
